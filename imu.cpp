@@ -51,33 +51,34 @@ void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles,
                 IMU_ST_SENSOR_DATA *pstMagnRawData)
 {
   //float MotionVal[9];
-  float MotionVal[9];
+  float MotionVal[6];
 
   MPU9250_READ_ACCEL();
-  MPU9250_READ_GYRO();
+  //MPU9250_READ_GYRO();
   MPU9250_READ_MAG();
 
-  MotionVal[0]=gyro[0]/32.8;
-  MotionVal[1]=gyro[1]/32.8;
-  MotionVal[2]=gyro[2]/32.8;
-  MotionVal[3]=accel[0];
-  MotionVal[4]=accel[1];
-  MotionVal[5]=accel[2];
-  MotionVal[6]=magn[0];
-  MotionVal[7]=magn[1];
-  MotionVal[8]=magn[2];
-  imuAHRSupdate((float)MotionVal[0] * 0.0175, (float)MotionVal[1] * 0.0175, (float)MotionVal[2] * 0.0175,
-                (float)MotionVal[3], (float)MotionVal[4], (float)MotionVal[5],
-                (float)MotionVal[6], (float)MotionVal[7], MotionVal[8]);
+  // MotionVal[0]=gyro[0]/32.8;
+  // MotionVal[1]=gyro[1]/32.8;
+  // MotionVal[2]=gyro[2]/32.8;
+  MotionVal[0]=accel[0];
+  MotionVal[1]=accel[1];
+  MotionVal[2]=accel[2];
+  MotionVal[3]=magn[0];
+  MotionVal[4]=magn[1];
+  MotionVal[5]=magn[2];
+  imuAHRSupdate(//(float)MotionVal[0] * 0.0175, (float)MotionVal[1] * 0.0175, (float)MotionVal[2] * 0.0175,
+                0.0, 0.0, 0.0,
+                (float)MotionVal[0], (float)MotionVal[1], (float)MotionVal[2],
+                (float)MotionVal[3], (float)MotionVal[4], MotionVal[5]);
 
 
-  pstAngles->fPitch = asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3; // pitch
-  pstAngles->fRoll = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3; // roll
-  pstAngles->fYaw = atan2(-2 * q1 * q2 - 2 * q0 * q3, 2 * q2 * q2 + 2 * q3 * q3 - 1) * 57.3; 
+  // pstAngles->fPitch = asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3; // pitch
+  // pstAngles->fRoll = atan2(2 * q2 * q3 + 2 * q0 * q1, -2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3; // roll
+  // pstAngles->fYaw = atan2(-2 * q1 * q2 - 2 * q0 * q3, 2 * q2 * q2 + 2 * q3 * q3 - 1) * 57.3; 
 
-  pstGyroRawData->s16X = gyro[0];
-  pstGyroRawData->s16Y = gyro[1];
-  pstGyroRawData->s16Z = gyro[2];
+  // pstGyroRawData->s16X = gyro[0];
+  // pstGyroRawData->s16Y = gyro[1];
+  // pstGyroRawData->s16Z = gyro[2];
 
   pstAccelRawData->s16X = accel[0];
   pstAccelRawData->s16Y = accel[1];
