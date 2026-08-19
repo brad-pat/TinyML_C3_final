@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <MicroTFLite.h>
 #define MODEL_DATA_IMPLEMENTATION
-//#include "cnn_9f_10hz.h"
-#include "hybrid_6f_10hz.h"
+//#include "cnn_6f_10hz.h"
+//#include "hybrid_6f_5hz.h"
+#include "cnn_6f_5hz_lite_f32.h"
 #include "imu.h"
 #include <stdint.h>
 #include <math.h>
@@ -24,7 +25,7 @@ IMU_ST_SENSOR_DATA stAccelRawData;
 IMU_ST_SENSOR_DATA stMagnRawData;
 
 // --------- Sampling parameters ----------
-static constexpr uint32_t SAMPLE_INTERVAL_MS = 100;   // 10 Hz = 100 | 5 Hz = 200
+static constexpr uint32_t SAMPLE_INTERVAL_MS = 200;   // 10 Hz = 100 | 5 Hz = 200
 static constexpr int FEATURES = 6;
 static constexpr int WINDOW_SECONDS = 3;
 static constexpr int SAMPLES_PER_WINDOW = (WINDOW_SECONDS * 1000) / SAMPLE_INTERVAL_MS; // 30
@@ -47,6 +48,18 @@ static std::atomic<uint32_t> g_seq{0};   // increments every window produced
 static std::atomic<uint32_t> g_done{0};  // increments every inference done
 static std::atomic<uint32_t> g_overrun{0}; // count overruns
 
+static inline void read_imu_6axis(float out6[6]) {
+  imuDataGet(&stAngles, &stGyroRawData, &stAccelRawData, &stMagnRawData);
+
+  out6[0] = (float)stAccelRawData.s16X;
+  out6[1] = (float)stAccelRawData.s16Y;
+  out6[2] = (float)stAccelRawData.s16Z;
+
+  out6[3] = (float)stMagnRawData.s16X;
+  out6[4] = (float)stMagnRawData.s16Y;
+  out6[5] = (float)stMagnRawData.s16Z;
+}
+
 static inline void read_imu_9axis(float out9[9]) {
   imuDataGet(&stAngles, &stGyroRawData, &stAccelRawData, &stMagnRawData);
 
@@ -64,14 +77,17 @@ static inline void read_imu_9axis(float out9[9]) {
 }
 
 static void collect_window_into(float* dst) {
-  float sample9[9];
+  //float sample9[9];
+  float sample6[6];
   for (int s = 0; s < SAMPLES_PER_WINDOW; s++) {
     uint32_t start = millis();
 
-    read_imu_9axis(sample9);
+    //read_imu_9axis(sample9);
+    read_imu_6axis(sample6);
 
     int base = s * FEATURES;
-    for (int f = 0; f < FEATURES; f++) dst[base + f] = sample9[f];
+    //for (int f = 0; f < FEATURES; f++) dst[base + f] = sample9[f];
+    for (int f = 0; f < FEATURES; f++) dst[base + f] = sample6[f];
 
     uint32_t elapsed = millis() - start;
     if (elapsed < SAMPLE_INTERVAL_MS) delay(SAMPLE_INTERVAL_MS - elapsed);
@@ -85,7 +101,7 @@ void setup1() {
   // IMPORTANT: do ModelInit on the same core that runs inference
   // (some libs behave better this way).
   // Keep Serial off core1.
-  bool ok = ModelInit(model_hybrid_6f_10hz, tensor_arena, kTensorArenaSize);
+  bool ok = ModelInit(model_cnn_lite_f32, tensor_arena, kTensorArenaSize);
   if (!ok) {
     // signal failure by setting pred to -2
     g_pred.store(-2, std::memory_order_release);

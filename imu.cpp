@@ -69,7 +69,7 @@ void imuDataGet(IMU_ST_ANGLES_DATA *pstAngles,
   imuAHRSupdate(//(float)MotionVal[0] * 0.0175, (float)MotionVal[1] * 0.0175, (float)MotionVal[2] * 0.0175,
                 0.0, 0.0, 0.0,
                 (float)MotionVal[0], (float)MotionVal[1], (float)MotionVal[2],
-                (float)MotionVal[3], (float)MotionVal[4], MotionVal[5]);
+                (float)MotionVal[3], (float)MotionVal[4], (float)MotionVal[5]);
 
 
   // pstAngles->fPitch = asin(-2 * q1 * q3 + 2 * q0* q2)* 57.3; // pitch
